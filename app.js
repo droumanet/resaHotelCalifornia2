@@ -1,23 +1,44 @@
 import express from 'express';
-import cookieSession from 'cookie-session';
-import methodOverride from 'method-override';
 import path from 'path';
-
-// Routes
-import chambreRoutes from './routes/chambres';
-import clientRoutes from './routes/clients';
-import authRoutes from './routes/auth';
-
+import { fileURLToPath } from 'url';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Récupérer le chemin local (file://...) et le répertoire courant (workspace/resaHotelCalifornia2)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Configuration EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Middleware
+// Middleware (ajout de la route /public, gestion JSON et URLencoded)
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// Configuration du middleware avec exclusion
+app.use('/semantic-ui', express.static(
+    path.join(__dirname, 'node_modules', 'semantic-ui-css'),
+    { fallthrough: true }
+));
+
+// Route principale
+app.get('/', (req, res) => {
+    res.render('accueil', { 
+        title: 'Hôtel California - Système de Gestion'
+    });
+});
+
+// Gestion des erreurs 404
+app.use((req, res) => {
+    res.status(404).render('error', { 
+        title: 'Page non trouvée',
+        error: 'La page demandée n\'existe pas.' 
+    });
+});
+
+app.listen(PORT, () => {
+    console.log(`Serveur démarré sur http://localhost:${PORT}`);
+});
